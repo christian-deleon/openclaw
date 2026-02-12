@@ -1,7 +1,5 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
-
 import { completeSimple } from "@mariozechner/pi-ai";
-
+import { describe, expect, it, vi, beforeEach } from "vitest";
 import { getApiKeyForModel } from "../agents/model-auth.js";
 import { resolveModel } from "../agents/pi-embedded-runner/model.js";
 import * as tts from "./tts.js";
@@ -464,6 +462,31 @@ describe("tts", () => {
         cfg: baseCfg,
         kind: "final",
         inboundAudio: false,
+      });
+
+      expect(result).toBe(payload);
+      expect(fetchMock).not.toHaveBeenCalled();
+
+      globalThis.fetch = originalFetch;
+      process.env.OPENCLAW_TTS_PREFS = prevPrefs;
+    });
+
+    it("skips auto-TTS when markdown stripping leaves text too short", async () => {
+      const prevPrefs = process.env.OPENCLAW_TTS_PREFS;
+      process.env.OPENCLAW_TTS_PREFS = `/tmp/tts-test-${Date.now()}.json`;
+      const originalFetch = globalThis.fetch;
+      const fetchMock = vi.fn(async () => ({
+        ok: true,
+        arrayBuffer: async () => new ArrayBuffer(1),
+      }));
+      globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+      const payload = { text: "### **bold**" };
+      const result = await maybeApplyTtsToPayload({
+        payload,
+        cfg: baseCfg,
+        kind: "final",
+        inboundAudio: true,
       });
 
       expect(result).toBe(payload);
