@@ -11,21 +11,24 @@ set shell := ["bash", "-cu"]
 image := "openclaw:local"
 container := "openclaw-gateway"
 op_account := "my.1password.com"
-op_env := ".env.op"
+op_env := "op.env"
 config_volume := "openclaw-config"
 workspace_volume := "openclaw-workspace"
 gateway_port := env("OPENCLAW_GATEWAY_PORT", "18789")
 
 # 1Password wrapper for commands needing secrets
+
 op_run := "op run --env-file=" + op_env + " --account=" + op_account + " --"
 
 # Docker compose shortcuts
+
 dc := "docker compose"
 dc_exec := dc + " exec " + container
 dc_op := op_run + " " + dc
 dc_exec_op := op_run + " " + dc_exec
 
 # CLI inside container
+
 cli_cmd := "node dist/index.js"
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -111,7 +114,7 @@ shell:
 # Open web UI with token
 open:
     #!/usr/bin/env bash
-    token=$(op read "op://Private/OpenClaw Gateway Token/password" --account={{ op_account }})
+    token=$(op read "op://kpunafc5jo6nt6f53sgj5geh5i/4y3xprwfmwxy5de4uftwd2eenu/password" --account={{ op_account }})
     open "http://localhost:{{ gateway_port }}/?token=${token}"
 
 # ─────────────────────────────────────────────────────────────────────────────
